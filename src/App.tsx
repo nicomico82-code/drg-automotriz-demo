@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { categories, gallery, labelForCategory, products } from "./catalog";
+import { categories as seedCategories, gallery as seedGallery, labelForCategory as seedLabelForCategory, products as seedProducts } from "./catalog";
+import { loadCatalog } from "./catalogRemote";
 import { SupportChat } from "./SupportChat";
 import {
   addLine,
@@ -40,7 +41,7 @@ function createDemoCode() {
   return `DRG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
-function ProductCard({ product, onOpen }: { product: Product; onOpen: (product: Product) => void }) {
+function ProductCard({ product, onOpen, labelForCategory }: { product: Product; onOpen: (product: Product) => void; labelForCategory: (category: CategoryId) => string }) {
   return (
     <article className="product-card">
       <button className="product-card__image" type="button" onClick={() => onOpen(product)} aria-label={`Ver ${product.name}`}>
@@ -66,6 +67,7 @@ function ProductCard({ product, onOpen }: { product: Product; onOpen: (product: 
 
 function ProductModal({
   product,
+  labelForCategory,
   variant,
   quantity,
   onVariant,
@@ -74,6 +76,7 @@ function ProductModal({
   onClose,
 }: {
   product: Product;
+  labelForCategory: (category: CategoryId) => string;
   variant: string;
   quantity: number;
   onVariant: (value: string) => void;
@@ -288,6 +291,7 @@ function SuccessModal({ order, onClose }: { order: DemoOrder; onClose: () => voi
 export default function App() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"Todos" | CategoryId>("Todos");
+  const [catalog, setCatalog] = useState({ categories: seedCategories, products: seedProducts, gallery: seedGallery });
   const [cart, setCart] = useState<CartLine[]>(loadCart);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -298,15 +302,18 @@ export default function App() {
   const [order, setOrder] = useState<DemoOrder | null>(null);
 
   useEffect(() => { window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }, [cart]);
+  useEffect(() => { loadCatalog().then(setCatalog).catch(() => undefined); }, []);
+
+  const labelForCategory = (value: CategoryId) => catalog.categories.find((item) => item.id === value)?.label ?? seedLabelForCategory(value);
 
   const visibleProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    return products.filter((product) => {
+    return catalog.products.filter((product) => {
       const matchesCategory = category === "Todos" || product.category === category;
       const matchesQuery = !normalizedQuery || `${product.name} ${product.category} ${product.description}`.toLowerCase().includes(normalizedQuery);
       return matchesCategory && matchesQuery;
     });
-  }, [category, query]);
+  }, [catalog.products, category, query]);
 
   const openProduct = (product: Product) => { setSelectedProduct(product); setSelectedVariant(product.variants[0] ?? "Único"); setSelectedQuantity(1); };
   const addSelectedProduct = () => { if (!selectedProduct) return; setCart((current) => addLine(current, selectedProduct, selectedVariant, selectedQuantity)); setSelectedProduct(null); setCartOpen(true); };
@@ -324,27 +331,27 @@ export default function App() {
       <main>
         <section className="store-hero" id="inicio">
           <div className="store-hero__copy"><p className="eyebrow"><span className="eyebrow-line" /> CarPlay · audio · servicio a domicilio</p><h1>Tecnología para tu vehículo. <em>Instalación que llega a ti.</em></h1><p>Importamos equipos multimedia, mejoramos tu sistema original y dejamos todo funcionando en tu auto, sin complicaciones.</p><div className="hero-actions"><a className="primary-button" href="#catalogo">Ver equipos <span aria-hidden="true">↓</span></a><button className="secondary-button" type="button" onClick={() => setQuoteOpen(true)}>Cotizar instalación <span aria-hidden="true">↗</span></button></div><div className="hero-proof"><span>01</span><div><strong>Compatibilidad primero</strong><p>Revisamos marca, modelo y año antes de recomendar.</p></div></div></div>
-          <div className="store-hero__visual"><img src={gallery[0].image} alt="Instalación multimedia en un vehículo" /><div className="hero-product-card"><span>Trabajo destacado</span><strong>Mercedes · CarPlay inalámbrico</strong><b>Equipo + instalación</b></div><div className="hero-stamp"><img src="/drg/logo.png" alt="DRG Automotriz" /></div></div>
+          <div className="store-hero__visual"><img src={catalog.gallery[0].image} alt="Instalación multimedia en un vehículo" /><div className="hero-product-card"><span>Trabajo destacado</span><strong>Mercedes · CarPlay inalámbrico</strong><b>Equipo + instalación</b></div><div className="hero-stamp"><img src="/drg/logo.png" alt="DRG Automotriz" /></div></div>
         </section>
 
         <section className="trust-strip" aria-label="Propuesta de valor"><div><span>⌁</span><strong>Equipos compatibles</strong><small>Elegidos para tu vehículo</small></div><div><span>⌖</span><strong>Servicio a domicilio</strong><small>Coordinamos en tu comuna</small></div><div><span>✓</span><strong>Instalación cuidada</strong><small>Probamos todo antes de entregar</small></div><div><span>↗</span><strong>Soporte cercano</strong><small>Te explicamos cómo usarlo</small></div></section>
 
         <section className="catalog-section" id="catalogo">
           <div className="section-heading"><div><p className="eyebrow">01 · Catálogo DRG</p><h2>Mejora la experiencia de <em>manejar.</em></h2></div><p>Equipos, accesorios y servicios que se pueden adaptar a tu auto y a tu forma de usarlo.</p></div>
-          <div className="catalog-toolbar"><div className="category-list" aria-label="Categorías">{categories.map((item) => <button type="button" className={category === item.id ? "category-button is-active" : "category-button"} key={item.id} onClick={() => setCategory(item.id)}>{item.label}</button>)}</div><label className="search-box"><span aria-hidden="true">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar equipo o servicio" aria-label="Buscar equipo o servicio" /></label></div>
-          {visibleProducts.length === 0 ? <div className="no-results"><h3>No encontramos ese equipo.</h3><p>Prueba con otra palabra o solicita una revisión personalizada.</p><button className="secondary-button" type="button" onClick={() => { setQuery(""); setCategory("Todos"); }}>Ver catálogo</button></div> : <div className="product-grid">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} onOpen={openProduct} />)}</div>}
+          <div className="catalog-toolbar"><div className="category-list" aria-label="Categorías">{catalog.categories.map((item) => <button type="button" className={category === item.id ? "category-button is-active" : "category-button"} key={item.id} onClick={() => setCategory(item.id)}>{item.label}</button>)}</div><label className="search-box"><span aria-hidden="true">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar equipo o servicio" aria-label="Buscar equipo o servicio" /></label></div>
+          {visibleProducts.length === 0 ? <div className="no-results"><h3>No encontramos ese equipo.</h3><p>Prueba con otra palabra o solicita una revisión personalizada.</p><button className="secondary-button" type="button" onClick={() => { setQuery(""); setCategory("Todos"); }}>Ver catálogo</button></div> : <div className="product-grid">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} labelForCategory={labelForCategory} onOpen={openProduct} />)}</div>}
         </section>
 
         <section className="service-section" id="servicios"><div className="service-section__intro"><p className="eyebrow">02 · Cómo trabajamos</p><h2>Del diagnóstico a la <em>ruta.</em></h2><p>La compra puede ser solo del equipo o convertirse en una solución completa: importación, compatibilidad, instalación y explicación final.</p><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Quiero revisar mi auto <span aria-hidden="true">↗</span></button></div><div className="service-steps"><div><span>01</span><strong>Cuéntanos tu vehículo</strong><p>Marca, modelo, año y qué te gustaría mejorar.</p></div><div><span>02</span><strong>Te proponemos una alternativa</strong><p>Elegimos el equipo y la configuración más segura.</p></div><div><span>03</span><strong>Instalamos y probamos</strong><p>Coordinamos visita a domicilio y dejamos todo listo.</p></div></div></section>
 
-        <section className="gallery-section" id="trabajos"><div className="section-heading"><div><p className="eyebrow">03 · Trabajos reales</p><h2>Una muestra de lo que <em>hacemos.</em></h2></div><p>Integraciones, actualizaciones y diagnósticos documentados por el equipo.</p></div><div className="gallery-grid">{gallery.map((item) => <figure key={item.image}><img src={item.image} alt={item.title} loading="lazy" /><figcaption><span>{item.tag}</span><strong>{item.title}</strong></figcaption></figure>)}</div></section>
+        <section className="gallery-section" id="trabajos"><div className="section-heading"><div><p className="eyebrow">03 · Trabajos reales</p><h2>Una muestra de lo que <em>hacemos.</em></h2></div><p>Integraciones, actualizaciones y diagnósticos documentados por el equipo.</p></div><div className="gallery-grid">{catalog.gallery.map((item) => <figure key={item.image}><img src={item.image} alt={item.title} loading="lazy" /><figcaption><span>{item.tag}</span><strong>{item.title}</strong></figcaption></figure>)}</div></section>
 
         <section className="contact-section" id="contacto"><div><p className="eyebrow">04 · Hablemos</p><h2>¿Qué quieres mejorar <em>en tu auto?</em></h2><p>Envíanos tu marca y modelo. Te ayudamos a encontrar una alternativa compatible y coordinamos la instalación.</p></div><div className="contact-actions"><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Solicitar cotización <span aria-hidden="true">↗</span></button><a className="secondary-button" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Ver Instagram <span aria-hidden="true">↗</span></a><small>El número de WhatsApp se configura al pasar el demo a producción.</small></div></section>
       </main>
 
       <footer className="store-footer"><div className="store-brand"><span className="store-brand__logo"><img src="/drg/logo.png" alt="" /></span><span><strong>DRG</strong><small>Automotriz</small></span></div><p>Multimedia, CarPlay y soluciones para tu vehículo.</p><span>© {new Date().getFullYear()} · Demo</span></footer>
 
-      {selectedProduct && <ProductModal product={selectedProduct} variant={selectedVariant} quantity={selectedQuantity} onVariant={setSelectedVariant} onQuantity={setSelectedQuantity} onAdd={addSelectedProduct} onClose={() => setSelectedProduct(null)} />}
+      {selectedProduct && <ProductModal product={selectedProduct} labelForCategory={labelForCategory} variant={selectedVariant} quantity={selectedQuantity} onVariant={setSelectedVariant} onQuantity={setSelectedQuantity} onAdd={addSelectedProduct} onClose={() => setSelectedProduct(null)} />}
       {cartOpen && <CartDrawer lines={cart} onQuantity={(lineId, quantity) => setCart((current) => updateLineQuantity(current, lineId, quantity))} onRemove={(lineId) => setCart((current) => removeLine(current, lineId))} onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }} onClose={() => setCartOpen(false)} />}
       {checkoutOpen && <CheckoutModal lines={cart} onBack={() => { setCheckoutOpen(false); setCartOpen(true); }} onComplete={completeOrder} />}
       {quoteOpen && <QuoteModal onClose={() => setQuoteOpen(false)} />}

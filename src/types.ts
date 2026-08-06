@@ -1,4 +1,4 @@
-export type CategoryId = "Multimedia" | "CarPlay" | "Diagnostico" | "Accesorios" | "Instalacion";
+export type CategoryId = string;
 
 export type Product = {
   id: string;
@@ -8,8 +8,11 @@ export type Product = {
   compareAtPriceClp?: number;
   description: string;
   image: string;
+  gallery?: string[];
   badge?: string;
   variants: string[];
+  kind?: "product" | "service";
+  featured?: boolean;
 };
 
 export type CartLine = {

@@ -47,3 +47,14 @@ Está preparado como Static Site:
 2. Agenda de instalaciones y seguimiento de solicitudes.
 3. Notificaciones por WhatsApp o panel administrativo.
 4. Pagos y reglas de despacho configurables.
+
+## Catálogo administrable
+
+La tienda usa el catálogo incluido en `src/catalog.ts` cuando no hay variables de entorno. Para un cliente real puede leer el mismo catálogo que el panel administrativo `drg-automotriz-admin` configurando:
+
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+```
+
+Con esas variables, la aplicación consulta categorías, productos, servicios y ofertas activas en Supabase. Si la conexión no está disponible, mantiene el catálogo de respaldo para que el sitio siga siendo visible.
