@@ -15,6 +15,16 @@ import type { CartLine, CategoryId, CheckoutData, DemoOrder, Fulfillment, Produc
 
 const CART_STORAGE_KEY = "drg-automotriz-demo-cart";
 const INSTAGRAM_URL = "https://www.instagram.com/drg_automotrizcl/";
+const QUOTE_EMAIL = "Drg.automotrizcl@gmail.com";
+const QUOTE_FORM_ENDPOINT = `https://formsubmit.co/ajax/${QUOTE_EMAIL}`;
+
+type QuoteFormData = {
+  name: string;
+  phone: string;
+  vehicle: string;
+  service: string;
+  notes: string;
+};
 
 function loadCart(): CartLine[] {
   if (typeof window === "undefined") return [];
@@ -206,9 +216,40 @@ function CheckoutModal({ lines, onBack, onComplete }: { lines: CartLine[]; onBac
 
 function QuoteModal({ onClose }: { onClose: () => void }) {
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({ name: "", phone: "", vehicle: "", service: "Instalación de pantalla / CarPlay", notes: "" });
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState<QuoteFormData>({ name: "", phone: "", vehicle: "", service: "Instalación de pantalla / CarPlay", notes: "" });
   const update = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
-  const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setSubmitted(true); };
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setIsSending(true);
+    try {
+      const response = await fetch(QUOTE_FORM_ENDPOINT, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          _subject: `Nueva cotización · ${form.vehicle}`,
+          _template: "table",
+          _honey: "",
+          _url: typeof window === "undefined" ? "" : window.location.href,
+          name: form.name,
+          phone: form.phone,
+          vehicle: form.vehicle,
+          service: form.service,
+          details: form.notes || "Sin detalle adicional",
+        }),
+      });
+      const result = await response.json().catch(() => null) as { success?: boolean | string; message?: string } | null;
+      const accepted = response.ok && (!result || result.success === undefined || result.success === true || result.success === "true");
+      if (!accepted) throw new Error(result?.message || "El servicio de correo rechazó la solicitud.");
+      setSubmitted(true);
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "No pudimos enviar la cotización. Inténtalo nuevamente.");
+    } finally {
+      setIsSending(false);
+    }
+  };
   return (
     <div className="overlay" role="presentation">
       <section className="quote-modal" role="dialog" aria-modal="true" aria-labelledby="quote-title">
@@ -220,10 +261,11 @@ function QuoteModal({ onClose }: { onClose: () => void }) {
             <label>Marca, modelo y año<input required value={form.vehicle} onChange={(event) => update("vehicle", event.target.value)} placeholder="Ej. Mercedes CLA 2018" /></label>
             <label>¿Qué necesitas?<select value={form.service} onChange={(event) => update("service", event.target.value)}><option>Instalación de pantalla / CarPlay</option><option>Diagnóstico o reparación de radio</option><option>Cámara de retroceso</option><option>Otro proyecto</option></select></label>
             <label>Detalle <span className="optional">opcional</span><textarea value={form.notes} onChange={(event) => update("notes", event.target.value)} placeholder="Describe tu idea o adjunta luego una foto por WhatsApp." /></label>
-            <button className="primary-button primary-button--wide" type="submit">Solicitar revisión</button>
+            {error && <p className="form-error" role="alert">{error}</p>}
+            <button className="primary-button primary-button--wide" type="submit" disabled={isSending}>{isSending ? "Enviando cotización…" : "Enviar cotización"}</button>
           </form>
-          <p className="demo-caption">En una versión conectada, esta solicitud llegaría al panel o WhatsApp de DRG.</p>
-        </> : <div className="quote-success"><div className="success-icon">✓</div><p className="eyebrow">Solicitud preparada</p><h2>Ya tenemos los datos del proyecto.</h2><p>En la versión real, el equipo podría responderte con una alternativa compatible y una fecha de instalación.</p><button className="primary-button primary-button--wide" type="button" onClick={onClose}>Volver al catálogo</button></div>}
+          <p className="demo-caption">La solicitud se envía directamente a <strong>{QUOTE_EMAIL}</strong>.</p>
+        </> : <div className="quote-success"><div className="success-icon">✓</div><p className="eyebrow">Cotización enviada</p><h2>Recibimos los datos de tu proyecto.</h2><p>La solicitud fue enviada a <strong>{QUOTE_EMAIL}</strong>. El equipo podrá revisar compatibilidad, disponibilidad y coordinación de instalación.</p><button className="primary-button primary-button--wide" type="button" onClick={onClose}>Volver al catálogo</button></div>}
       </section>
     </div>
   );

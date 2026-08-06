@@ -8,12 +8,13 @@ Demo de una solución digital a medida para DRG Automotriz: catálogo de equipos
 - Fichas de producto con variantes, precios demostrativos y stock visible.
 - Carrito persistente en el navegador.
 - Solicitud de cotización con vehículo, modalidad y comentarios.
+- Envío real de cotizaciones al correo de DRG mediante un endpoint de correo externo.
 - Opciones de retiro, despacho e instalación a domicilio.
 - Galería de trabajos realizados y sección de cobertura.
 - Confirmación visual de la solicitud para el cliente.
 - Diseño responsive para móvil y escritorio.
 
-Esta versión es una demo: no realiza cobros ni guarda solicitudes en un servidor. Al pasar a producción se puede conectar el catálogo, inventario, agenda de instalaciones, avisos y pagos a las herramientas del negocio.
+Esta versión es una demo: no realiza cobros ni guarda solicitudes en una base de datos. Las cotizaciones se envían por correo a `Drg.automotrizcl@gmail.com` mediante FormSubmit; la primera vez, el buzón debe confirmar la activación del formulario desde el correo que envía el servicio.
 
 ## Ejecutar localmente
 
@@ -44,5 +45,5 @@ Está preparado como Static Site:
 
 1. Catálogo e inventario administrables.
 2. Agenda de instalaciones y seguimiento de solicitudes.
-3. Notificaciones por correo, WhatsApp o panel administrativo.
+3. Notificaciones por WhatsApp o panel administrativo.
 4. Pagos y reglas de despacho configurables.

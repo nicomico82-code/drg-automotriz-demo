@@ -66,6 +66,7 @@ h1 em, h2 em { color: var(--accent); font-style: normal; }
 .primary-button, .secondary-button { display: inline-flex; align-items: center; justify-content: center; gap: .7rem; min-height: 48px; padding: .8rem 1.24rem; border-radius: 999px; font-size: .78rem; font-weight: 800; transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease; }
 .primary-button { background: var(--accent); color: #ffffff; box-shadow: 0 10px 30px rgba(206, 32, 38, .24); }
 .primary-button:hover { background: #ed1c24; box-shadow: 0 14px 36px rgba(206, 32, 38, .34); transform: translateY(-2px); }
+.primary-button:disabled { opacity: .65; cursor: wait; transform: none; box-shadow: none; }
 .secondary-button { border: 1px solid #536266; background: transparent; color: var(--ink); }
 .secondary-button:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
 .hero-proof { display: flex; align-items: center; gap: .8rem; max-width: 390px; margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
