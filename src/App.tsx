@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { categories, gallery, labelForCategory, products } from "./catalog";
+import { SupportChat } from "./SupportChat";
 import {
   addLine,
   formatPrice,
@@ -306,6 +307,7 @@ export default function App() {
       {checkoutOpen && <CheckoutModal lines={cart} onBack={() => { setCheckoutOpen(false); setCartOpen(true); }} onComplete={completeOrder} />}
       {quoteOpen && <QuoteModal onClose={() => setQuoteOpen(false)} />}
       {order && <SuccessModal order={order} onClose={() => setOrder(null)} />}
+      <SupportChat />
     </div>
   );
 }
