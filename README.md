@@ -54,7 +54,7 @@ La tienda usa el catálogo incluido en `src/catalog.ts` cuando no hay variables 
 
 ```env
 VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
+VITE_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 Con esas variables, la aplicación consulta categorías, productos, servicios y ofertas activas en Supabase. Si la conexión no está disponible, mantiene el catálogo de respaldo para que el sitio siga siendo visible.
