@@ -4,12 +4,12 @@ Demo de una solución digital a medida para DRG Automotriz: catálogo de equipos
 
 ## Incluye
 
-- Catálogo organizado por multimedia, seguridad, confort y servicios.
-- Fichas de producto con variantes, precios demostrativos y stock visible.
+- Catálogo organizado por integración CarPlay/Android Auto, pantallas, diagnóstico e instalación.
+- Fichas de servicio con marcas compatibles y valores definidos mediante cotización.
 - Carrito persistente en el navegador.
 - Solicitud de cotización con vehículo, modalidad y comentarios.
 - Envío real de cotizaciones al correo de DRG mediante un endpoint de correo externo.
-- Opciones de retiro, despacho e instalación a domicilio.
+- Opciones de coordinación, despacho e instalación a domicilio.
 - Galería de trabajos realizados y sección de cobertura.
 - Confirmación visual de la solicitud para el cliente.
 - Diseño responsive para móvil y escritorio.

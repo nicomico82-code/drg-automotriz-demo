@@ -18,6 +18,10 @@ const CART_STORAGE_KEY = "drg-automotriz-demo-cart";
 const INSTAGRAM_URL = "https://www.instagram.com/drg_automotrizcl/";
 const QUOTE_EMAIL = "Drg.automotrizcl@gmail.com";
 const QUOTE_FORM_ENDPOINT = `https://formsubmit.co/ajax/${QUOTE_EMAIL}`;
+const SUPPORTED_BRANDS = [
+  "Mazda", "Mercedes-Benz", "Toyota", "Dodge", "Audi", "BMW", "Chevrolet", "Volkswagen",
+  "Porsche", "Volvo", "Land Rover", "Honda", "Lexus", "Ford", "Jeep", "Rolls-Royce",
+];
 
 type QuoteFormData = {
   name: string;
@@ -58,7 +62,7 @@ function ProductCard({ product, onOpen, labelForCategory }: { product: Product; 
             <strong>{formatPrice(product.priceClp)}</strong>
             {product.compareAtPriceClp && <del>{formatPrice(product.compareAtPriceClp)}</del>}
           </div>
-          <button type="button" className="text-button" onClick={() => onOpen(product)}>Elegir <span aria-hidden="true">＋</span></button>
+          <button type="button" className="text-button" onClick={() => onOpen(product)}>{product.priceClp > 0 ? "Elegir" : "Consultar"} <span aria-hidden="true">＋</span></button>
         </div>
       </div>
     </article>
@@ -113,7 +117,7 @@ function ProductModal({
               <span>{quantity}</span>
               <button type="button" onClick={() => onQuantity(Math.min(20, quantity + 1))} aria-label="Aumentar cantidad">＋</button>
             </div>
-            <button className="primary-button" type="button" onClick={onAdd}>Agregar al carrito · {formatPrice(product.priceClp * quantity)}</button>
+            <button className="primary-button" type="button" onClick={onAdd}>{product.priceClp > 0 ? `Agregar al carrito · ${formatPrice(product.priceClp * quantity)}` : "Agregar a la solicitud"}</button>
           </div>
           <p className="demo-caption">Demo interactiva · no se realiza un cobro real.</p>
         </div>
@@ -221,7 +225,7 @@ function QuoteModal({ onClose }: { onClose: () => void }) {
   const [submitted, setSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState("");
-  const [form, setForm] = useState<QuoteFormData>({ name: "", phone: "", vehicle: "", service: "Instalación de pantalla / CarPlay", notes: "" });
+  const [form, setForm] = useState<QuoteFormData>({ name: "", phone: "", vehicle: "", service: "Integración CarPlay / Android Auto", notes: "" });
   const update = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -262,7 +266,7 @@ function QuoteModal({ onClose }: { onClose: () => void }) {
           <form onSubmit={submit} className="quote-form">
             <div className="checkout-grid"><label>Nombre<input required value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="Tu nombre" /></label><label>WhatsApp<input required value={form.phone} onChange={(event) => update("phone", event.target.value)} placeholder="+56 9 ..." /></label></div>
             <label>Marca, modelo y año<input required value={form.vehicle} onChange={(event) => update("vehicle", event.target.value)} placeholder="Ej. Mercedes CLA 2018" /></label>
-            <label>¿Qué necesitas?<select value={form.service} onChange={(event) => update("service", event.target.value)}><option>Instalación de pantalla / CarPlay</option><option>Diagnóstico o reparación de radio</option><option>Cámara de retroceso</option><option>Otro proyecto</option></select></label>
+            <label>¿Qué necesitas?<select value={form.service} onChange={(event) => update("service", event.target.value)}><option>Integración CarPlay / Android Auto</option><option>Pantalla multimedia a pedido</option><option>Diagnóstico o reparación de radio</option><option>Instalación y configuración</option><option>Evaluación de compatibilidad</option><option>Otro proyecto</option></select></label>
             <label>Detalle <span className="optional">opcional</span><textarea value={form.notes} onChange={(event) => update("notes", event.target.value)} placeholder="Describe tu idea o adjunta luego una foto por WhatsApp." /></label>
             {error && <p className="form-error" role="alert">{error}</p>}
             <button className="primary-button primary-button--wide" type="submit" disabled={isSending}>{isSending ? "Enviando cotización…" : "Enviar cotización"}</button>
@@ -330,21 +334,23 @@ export default function App() {
 
       <main>
         <section className="store-hero" id="inicio">
-          <div className="store-hero__copy"><p className="eyebrow"><span className="eyebrow-line" /> CarPlay · audio · servicio a domicilio</p><h1>Tecnología para tu vehículo. <em>Instalación que llega a ti.</em></h1><p>Importamos equipos multimedia, mejoramos tu sistema original y dejamos todo funcionando en tu auto, sin complicaciones.</p><div className="hero-actions"><a className="primary-button" href="#catalogo">Ver equipos <span aria-hidden="true">↓</span></a><button className="secondary-button" type="button" onClick={() => setQuoteOpen(true)}>Cotizar instalación <span aria-hidden="true">↗</span></button></div><div className="hero-proof"><span>01</span><div><strong>Compatibilidad primero</strong><p>Revisamos marca, modelo y año antes de recomendar.</p></div></div></div>
+          <div className="store-hero__copy"><p className="eyebrow"><span className="eyebrow-line" /> CarPlay · Android Auto · instalación</p><h1>Tu pantalla original, <em>mucho más útil.</em></h1><p>Integramos CarPlay y Android Auto detrás de la radio de fábrica, instalamos pantallas a pedido y reparamos sistemas multimedia en una amplia variedad de marcas.</p><div className="hero-actions"><a className="primary-button" href="#catalogo">Ver soluciones <span aria-hidden="true">↓</span></a><button className="secondary-button" type="button" onClick={() => setQuoteOpen(true)}>Cotizar instalación <span aria-hidden="true">↗</span></button></div><div className="hero-proof"><span>01</span><div><strong>Compatibilidad primero</strong><p>Revisamos marca, modelo y año antes de recomendar.</p></div></div></div>
           <div className="store-hero__visual"><img src={catalog.gallery[0].image} alt="Instalación multimedia en un vehículo" /><div className="hero-product-card"><span>Trabajo destacado</span><strong>Mercedes · CarPlay inalámbrico</strong><b>Equipo + instalación</b></div><div className="hero-stamp"><img src="/drg/logo.png" alt="DRG Automotriz" /></div></div>
         </section>
 
         <section className="trust-strip" aria-label="Propuesta de valor"><div><span>⌁</span><strong>Equipos compatibles</strong><small>Elegidos para tu vehículo</small></div><div><span>⌖</span><strong>Servicio a domicilio</strong><small>Coordinamos en tu comuna</small></div><div><span>✓</span><strong>Instalación cuidada</strong><small>Probamos todo antes de entregar</small></div><div><span>↗</span><strong>Soporte cercano</strong><small>Te explicamos cómo usarlo</small></div></section>
 
         <section className="catalog-section" id="catalogo">
-          <div className="section-heading"><div><p className="eyebrow">01 · Catálogo DRG</p><h2>Mejora la experiencia de <em>manejar.</em></h2></div><p>Equipos, accesorios y servicios que se pueden adaptar a tu auto y a tu forma de usarlo.</p></div>
+          <div className="section-heading"><div><p className="eyebrow">01 · Soluciones DRG</p><h2>Mejora la experiencia de <em>manejar.</em></h2></div><p>Servicios de integración, pantallas a pedido, diagnóstico e instalación para que tu auto tenga la tecnología que necesita.</p></div>
           <div className="catalog-toolbar"><div className="category-list" aria-label="Categorías">{catalog.categories.map((item) => <button type="button" className={category === item.id ? "category-button is-active" : "category-button"} key={item.id} onClick={() => setCategory(item.id)}>{item.label}</button>)}</div><label className="search-box"><span aria-hidden="true">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar equipo o servicio" aria-label="Buscar equipo o servicio" /></label></div>
           {visibleProducts.length === 0 ? <div className="no-results"><h3>No encontramos ese equipo.</h3><p>Prueba con otra palabra o solicita una revisión personalizada.</p><button className="secondary-button" type="button" onClick={() => { setQuery(""); setCategory("Todos"); }}>Ver catálogo</button></div> : <div className="product-grid">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} labelForCategory={labelForCategory} onOpen={openProduct} />)}</div>}
         </section>
 
-        <section className="service-section" id="servicios"><div className="service-section__intro"><p className="eyebrow">02 · Cómo trabajamos</p><h2>Del diagnóstico a la <em>ruta.</em></h2><p>La compra puede ser solo del equipo o convertirse en una solución completa: importación, compatibilidad, instalación y explicación final.</p><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Quiero revisar mi auto <span aria-hidden="true">↗</span></button></div><div className="service-steps"><div><span>01</span><strong>Cuéntanos tu vehículo</strong><p>Marca, modelo, año y qué te gustaría mejorar.</p></div><div><span>02</span><strong>Te proponemos una alternativa</strong><p>Elegimos el equipo y la configuración más segura.</p></div><div><span>03</span><strong>Instalamos y probamos</strong><p>Coordinamos visita a domicilio y dejamos todo listo.</p></div></div></section>
+        <section className="service-section" id="servicios"><div className="service-section__intro"><p className="eyebrow">02 · Cómo trabajamos</p><h2>Del diagnóstico a la <em>ruta.</em></h2><p>El módulo se instala detrás de la radio original para sumar CarPlay y Android Auto. Si tu vehículo no trae pantalla, coordinamos una alternativa a pedido y la dejamos funcionando.</p><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Quiero revisar mi auto <span aria-hidden="true">↗</span></button></div><div className="service-steps"><div><span>01</span><strong>Cuéntanos tu vehículo</strong><p>Marca, modelo, año y qué te gustaría mejorar.</p></div><div><span>02</span><strong>Confirmamos compatibilidad</strong><p>Revisamos el sistema original y proponemos una alternativa.</p></div><div><span>03</span><strong>Instalamos y probamos</strong><p>Coordinamos la visita y dejamos todo listo y explicado.</p></div></div></section>
 
         <section className="gallery-section" id="trabajos"><div className="section-heading"><div><p className="eyebrow">03 · Trabajos reales</p><h2>Una muestra de lo que <em>hacemos.</em></h2></div><p>Integraciones, actualizaciones y diagnósticos documentados por el equipo.</p></div><div className="gallery-grid">{catalog.gallery.map((item) => <figure key={item.image}><img src={item.image} alt={item.title} loading="lazy" /><figcaption><span>{item.tag}</span><strong>{item.title}</strong></figcaption></figure>)}</div></section>
+
+        <section className="brands-section" aria-labelledby="brands-title"><div><p className="eyebrow">Compatibilidad real</p><h2 id="brands-title">Trabajamos con tu <em>marca.</em></h2><p>Tenemos soluciones para integrar CarPlay y Android Auto, reparar pantallas originales o instalar un equipo a pedido. Envíanos marca, modelo y año para confirmar la alternativa correcta.</p></div><div className="brands-list">{SUPPORTED_BRANDS.map((brand) => <span key={brand}>{brand}</span>)}<span className="brands-list__more">Otros modelos · consultar</span></div></section>
 
         <section className="contact-section" id="contacto"><div><p className="eyebrow">04 · Hablemos</p><h2>¿Qué quieres mejorar <em>en tu auto?</em></h2><p>Envíanos tu marca y modelo. Te ayudamos a encontrar una alternativa compatible y coordinamos la instalación.</p></div><div className="contact-actions"><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Solicitar cotización <span aria-hidden="true">↗</span></button><a className="secondary-button" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Ver Instagram <span aria-hidden="true">↗</span></a><small>El número de WhatsApp se configura al pasar el demo a producción.</small></div></section>
       </main>

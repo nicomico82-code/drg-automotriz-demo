@@ -38,4 +38,4 @@ export function shippingCost(lines: CartLine[], fulfillment: Fulfillment) {
 export const total = (lines: CartLine[], fulfillment: Fulfillment) =>
   subtotal(lines) + shippingCost(lines, fulfillment);
 
-export const formatPrice = (value: number) => `$${value.toLocaleString("es-CL")}`;
+export const formatPrice = (value: number) => value <= 0 ? "Consultar" : `$${value.toLocaleString("es-CL")}`;

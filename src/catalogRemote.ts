@@ -28,7 +28,8 @@ export async function loadCatalog(): Promise<CatalogSnapshot> {
     publicSupabase.from("offers").select("id,item_id,type,value,starts_at,ends_at,active,badge").eq("active", true),
   ]);
 
-  if (categoryResult.error || itemResult.error || offerResult.error || !itemResult.data?.length) {
+  const hasCurrentSeed = (categoryResult.data ?? []).some((row) => String(row.id) === "carplay") && (itemResult.data ?? []).some((row) => String(row.id) === "drg-carplay-01");
+  if (categoryResult.error || itemResult.error || offerResult.error || !itemResult.data?.length || !hasCurrentSeed) {
     return { categories: seedCategories, products: seedProducts, gallery: seedGallery };
   }
 
@@ -50,7 +51,7 @@ export async function loadCatalog(): Promise<CatalogSnapshot> {
       priceClp,
       compareAtPriceClp: priceClp < basePrice ? basePrice : row.compare_at_price_clp ? Number(row.compare_at_price_clp) : undefined,
       description: String(row.description ?? ""),
-      image: String(row.image_url || seed?.image || "/drg/work-01.jpg"),
+      image: String(row.image_url || seed?.image || "/drg/real/mazda-carplay-01.png"),
       gallery: asStringArray(row.gallery_urls),
       badge: priceClp < basePrice ? String(offer?.badge || "Oferta") : row.badge ? String(row.badge) : undefined,
       variants: asStringArray(row.variants).length ? asStringArray(row.variants) : ["Único"],
