@@ -17,7 +17,11 @@ const quickQuestions: QuickQuestion[] = [
   { label: "Cotización", prompt: "¿Qué necesitan para cotizar?" },
   { label: "Compatibilidad", prompt: "¿Cómo revisan la compatibilidad?" },
   { label: "Despacho", prompt: "¿Hacen despacho o retiro?" },
-  { label: "Contacto", prompt: "¿Cómo puedo hablar con DRG?" },
+];
+
+const contactQuestions: QuickQuestion[] = [
+  { label: "WhatsApp", prompt: "¿Cómo contacto a DRG por WhatsApp?" },
+  { label: "Correo", prompt: "¿Cuál es el correo de DRG?" },
 ];
 
 const initialMessage: ChatMessage = {
@@ -44,8 +48,11 @@ function answerFor(question: string) {
   if (/despacho|retiro|envio|envío|entrega/.test(normalized)) {
     return "Puedes coordinar retiro o solicitar despacho. La cobertura y el costo se confirman junto con la cotización, según tu comuna y el tipo de equipo.";
   }
-  if (/contact|hablar|whatsapp|instagram|persona/.test(normalized)) {
-    return "Puedes solicitar una cotización desde el botón de contacto o escribir por Instagram. En una versión personalizada también se puede conectar el formulario con WhatsApp o un panel.";
+  if (/correo|email|mail/.test(normalized)) {
+    return "Puedes enviar tu solicitud o cotización a Drg.automotrizcl@gmail.com. Incluye marca, modelo, año y qué te gustaría instalar o reparar.";
+  }
+  if (/contact|hablar|whatsapp|wsp|instagram|persona/.test(normalized)) {
+    return "Para coordinar por WhatsApp, deja tu número en el formulario de cotización y el equipo de DRG se pondrá en contacto contigo. También puedes escribir por Instagram.";
   }
   if (/pago|comprar|cobro|tarjeta/.test(normalized)) {
     return "La cotización se confirma antes de cualquier pago. Luego se puede coordinar el medio de pago que defina el negocio, junto con la instalación y el despacho.";
@@ -100,7 +107,12 @@ export function SupportChat() {
             <div ref={endRef} />
           </div>
           <div className="support-chat__quick" aria-label="Preguntas frecuentes">
+            <p className="support-chat__section-label">Preguntas frecuentes</p>
             {quickQuestions.map((question) => <button type="button" key={question.label} onClick={() => ask(question.prompt)}>{question.label}</button>)}
+          </div>
+          <div className="support-chat__contact" aria-label="Canales de contacto">
+            <p className="support-chat__section-label">También puedes contactarnos</p>
+            {contactQuestions.map((question) => <button className="support-chat__contact-button" type="button" key={question.label} onClick={() => ask(question.prompt)}>{question.label}</button>)}
           </div>
           <form className="support-chat__form" onSubmit={submit}>
             <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Escribe una pregunta" aria-label="Escribe una pregunta" />
