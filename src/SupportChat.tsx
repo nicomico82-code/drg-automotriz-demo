@@ -47,7 +47,7 @@ function answerFor(question: string) {
     return "Puedes enviar tu solicitud o cotización a Drg.automotrizcl@gmail.com. Incluye marca, modelo, año y qué te gustaría instalar o reparar.";
   }
   if (/contact|hablar|whatsapp|wsp|instagram|persona/.test(normalized)) {
-    return "Para coordinar por WhatsApp, deja tu número en el formulario de cotización y el equipo de DRG se pondrá en contacto contigo. También puedes escribir por Instagram.";
+    return "Puedes escribir directamente al WhatsApp de DRG Automotriz: +56 9 2197 2666. También puedes dejar tu número en el formulario de cotización o escribir por Instagram.";
   }
   if (/pago|comprar|cobro|tarjeta/.test(normalized)) {
     return "La cotización se confirma antes de cualquier pago. Luego se puede coordinar el medio de pago que defina el negocio, junto con la instalación y el despacho.";

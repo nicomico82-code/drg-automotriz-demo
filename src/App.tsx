@@ -16,6 +16,9 @@ import type { CartLine, CategoryId, CheckoutData, Fulfillment, OrderSummary, Pro
 
 const CART_STORAGE_KEY = "drg-automotriz-cart";
 const INSTAGRAM_URL = "https://www.instagram.com/drg_automotrizcl/";
+const WHATSAPP_NUMBER = "56921972666";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
+const TIKTOK_URL = "https://www.tiktok.com/@drg_automotrizcl?_r=1&_t=ZS-98gjBAHoirF";
 const QUOTE_EMAIL = "Drg.automotrizcl@gmail.com";
 const QUOTE_FORM_ENDPOINT = `https://formsubmit.co/ajax/${QUOTE_EMAIL}`;
 const SUPPORTED_BRANDS = [
@@ -393,10 +396,10 @@ export default function App() {
 
         <section className="brands-section" aria-labelledby="brands-title"><div><p className="eyebrow">Compatibilidad real</p><h2 id="brands-title">Trabajamos con tu <em>marca.</em></h2><p>Tenemos soluciones para integrar CarPlay y Android Auto, reparar pantallas originales o instalar un equipo a pedido. Envíanos la marca, el modelo y el año para confirmar la alternativa correcta.</p></div><div className="brands-list">{SUPPORTED_BRANDS.map((brand) => <span key={brand}>{brand}</span>)}<span className="brands-list__more">Otros modelos · consultar</span></div></section>
 
-        <section className="contact-section" id="contacto"><div><p className="eyebrow">04 · Hablemos</p><h2>¿Qué quieres mejorar <em>en tu auto?</em></h2><p>Envíanos la marca y el modelo. Te ayudamos a encontrar una alternativa compatible y coordinamos la instalación.</p></div><div className="contact-actions"><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Solicitar cotización <span aria-hidden="true">↗</span></button><a className="secondary-button" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Ver Instagram <span aria-hidden="true">↗</span></a><small>La atención se coordina directamente con el equipo de DRG.</small></div></section>
+        <section className="contact-section" id="contacto"><div><p className="eyebrow">04 · Hablemos</p><h2>¿Qué quieres mejorar <em>en tu auto?</em></h2><p>Envíanos la marca y el modelo. Te ayudamos a encontrar una alternativa compatible y coordinamos la instalación.</p></div><div className="contact-actions"><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Solicitar cotización <span aria-hidden="true">↗</span></button><a className="secondary-button" href={`${WHATSAPP_URL}?text=Hola%20DRG%20Automotriz%2C%20quiero%20consultar%20por%20un%20equipo%20o%20instalaci%C3%B3n.`} target="_blank" rel="noreferrer">Escribir por WhatsApp <span aria-hidden="true">↗</span></a><a className="secondary-button" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Ver Instagram <span aria-hidden="true">↗</span></a><a className="secondary-button" href={TIKTOK_URL} target="_blank" rel="noreferrer">Ver TikTok <span aria-hidden="true">↗</span></a><small>WhatsApp: +56 9 2197 2666 · La atención se coordina directamente con el equipo de DRG.</small></div></section>
       </main>
 
-      <footer className="store-footer"><div className="store-brand"><span className="store-brand__logo"><img src="/drg/logo.png" alt="" /></span><span><strong>DRG</strong><small>Automotriz</small></span></div><p>Multimedia, CarPlay y soluciones para tu vehículo.</p><span>© {new Date().getFullYear()} · DRG Automotriz</span></footer>
+      <footer className="store-footer"><div className="store-brand"><span className="store-brand__logo"><img src="/drg/logo.png" alt="" /></span><span><strong>DRG</strong><small>Automotriz</small></span></div><p>Multimedia, CarPlay y soluciones para tu vehículo.</p><div className="store-footer__links"><a href={WHATSAPP_URL} target="_blank" rel="noreferrer">WhatsApp</a><a href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Instagram</a><a href={TIKTOK_URL} target="_blank" rel="noreferrer">TikTok</a></div><span>© {new Date().getFullYear()} · DRG Automotriz</span></footer>
 
       {selectedProduct && <ProductModal product={selectedProduct} labelForCategory={labelForCategory} variant={selectedVariant} quantity={selectedQuantity} onVariant={setSelectedVariant} onQuantity={setSelectedQuantity} onAdd={addSelectedProduct} onClose={() => setSelectedProduct(null)} />}
       {cartOpen && <CartDrawer lines={cart} onQuantity={(lineId, quantity) => setCart((current) => updateLineQuantity(current, lineId, quantity))} onRemove={(lineId) => setCart((current) => removeLine(current, lineId))} onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }} onClose={() => setCartOpen(false)} />}
