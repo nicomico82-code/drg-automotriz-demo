@@ -1,6 +1,6 @@
 # DRG Automotriz · catálogo y servicios
 
-Demo de una solución digital a medida para DRG Automotriz: catálogo de equipos para vehículos, solicitud de cotización, coordinación de despacho o instalación a domicilio y galería de trabajos realizados.
+Solución digital para DRG Automotriz: catálogo de equipos para vehículos, solicitud de cotización, coordinación de despacho o instalación a domicilio y galería de trabajos realizados.
 
 ## Incluye
 
@@ -14,7 +14,7 @@ Demo de una solución digital a medida para DRG Automotriz: catálogo de equipos
 - Confirmación visual de la solicitud para el cliente.
 - Diseño responsive para móvil y escritorio.
 
-Esta versión es una demo: no realiza cobros ni guarda solicitudes en una base de datos. Las cotizaciones se envían por correo a `Drg.automotrizcl@gmail.com` mediante FormSubmit; la primera vez, el buzón debe confirmar la activación del formulario desde el correo que envía el servicio.
+La versión actual no realiza cobros ni guarda solicitudes en una base de datos. Las cotizaciones y solicitudes se envían por correo a `Drg.automotrizcl@gmail.com` mediante FormSubmit; la primera vez, el buzón debe confirmar la activación del formulario desde el correo que envía el servicio.
 
 ## Ejecutar localmente
 

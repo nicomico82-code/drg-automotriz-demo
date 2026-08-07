@@ -48,7 +48,7 @@ function answerFor(question: string) {
     return "Puedes solicitar una cotización desde el botón de contacto o escribir por Instagram. En una versión personalizada también se puede conectar el formulario con WhatsApp o un panel.";
   }
   if (/pago|comprar|cobro|tarjeta/.test(normalized)) {
-    return "Esta es una demo y no realiza cobros. En producción se puede agregar el medio de pago que defina el negocio, después de confirmar compatibilidad, instalación y despacho.";
+    return "La cotización se confirma antes de cualquier pago. Luego se puede coordinar el medio de pago que defina el negocio, junto con la instalación y el despacho.";
   }
 
   return "Puedo responder preguntas sobre servicios, cotizaciones, compatibilidad, instalación previa coordinación, despacho o contacto. Prueba una de las opciones rápidas.";
@@ -106,7 +106,7 @@ export function SupportChat() {
             <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Escribe una pregunta" aria-label="Escribe una pregunta" />
             <button type="submit" aria-label="Enviar pregunta">→</button>
           </form>
-          <p className="support-chat__note">Demo informativa · respuestas limitadas a servicios DRG</p>
+          <p className="support-chat__note">Respuestas informativas sobre los servicios de DRG</p>
         </section>
       )}
       <button className={`support-chat__launcher${open ? " is-open" : ""}`} type="button" onClick={() => setOpen((current) => !current)} aria-expanded={open} aria-label={open ? "Cerrar asistente DRG" : "Abrir asistente DRG"}>

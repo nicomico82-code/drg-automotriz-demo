@@ -3,12 +3,12 @@ import { addLine, shippingCost, subtotal, total, updateLineQuantity } from "./ca
 import type { Product } from "./types";
 
 const product: Product = {
-  id: "demo",
-  name: "Kit multimedia demo",
+  id: "kit-multimedia",
+  name: "Kit multimedia",
   category: "Accesorios",
   priceClp: 10000,
   description: "Equipo compatible con instalación coordinada",
-  image: "demo.jpg",
+  image: "kit.jpg",
   variants: ["Único"],
 };
 

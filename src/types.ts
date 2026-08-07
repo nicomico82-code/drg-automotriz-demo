@@ -35,7 +35,7 @@ export type CheckoutData = {
   installation: boolean;
 };
 
-export type DemoOrder = {
+export type OrderSummary = {
   code: string;
   customerName: string;
   totalClp: number;

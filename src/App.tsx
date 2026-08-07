@@ -12,9 +12,9 @@ import {
   total,
   updateLineQuantity,
 } from "./cart";
-import type { CartLine, CategoryId, CheckoutData, DemoOrder, Fulfillment, Product } from "./types";
+import type { CartLine, CategoryId, CheckoutData, Fulfillment, OrderSummary, Product } from "./types";
 
-const CART_STORAGE_KEY = "drg-automotriz-demo-cart";
+const CART_STORAGE_KEY = "drg-automotriz-cart";
 const INSTAGRAM_URL = "https://www.instagram.com/drg_automotrizcl/";
 const QUOTE_EMAIL = "Drg.automotrizcl@gmail.com";
 const QUOTE_FORM_ENDPOINT = `https://formsubmit.co/ajax/${QUOTE_EMAIL}`;
@@ -41,8 +41,12 @@ function loadCart(): CartLine[] {
   }
 }
 
-function createDemoCode() {
+function createRequestCode() {
   return `DRG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+}
+
+function fulfillmentLabel(value: Fulfillment) {
+  return value === "instalacion" ? "Equipo + instalación a domicilio" : value === "despacho" ? "Despacho a domicilio" : "Retiro o coordinación";
 }
 
 function ProductCard({ product, onOpen, labelForCategory }: { product: Product; onOpen: (product: Product) => void; labelForCategory: (category: CategoryId) => string }) {
@@ -119,7 +123,7 @@ function ProductModal({
             </div>
             <button className="primary-button" type="button" onClick={onAdd}>{product.priceClp > 0 ? `Agregar al carrito · ${formatPrice(product.priceClp * quantity)}` : "Agregar a la solicitud"}</button>
           </div>
-          <p className="demo-caption">Demo interactiva · no se realiza un cobro real.</p>
+          <p className="info-caption">El valor final se confirma según compatibilidad, equipo e instalación.</p>
         </div>
       </section>
     </div>
@@ -173,15 +177,18 @@ function CartDrawer({
   );
 }
 
-function CheckoutModal({ lines, onBack, onComplete }: { lines: CartLine[]; onBack: () => void; onComplete: (data: CheckoutData) => void }) {
+function CheckoutModal({ lines, onBack, onComplete }: { lines: CartLine[]; onBack: () => void; onComplete: (data: CheckoutData, code: string) => void }) {
   const [form, setForm] = useState<CheckoutData>({ name: "", email: "", phone: "", fulfillment: "retiro", address: "", notes: "", vehicle: "", installation: false });
   const [error, setError] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [requestCode] = useState(createRequestCode);
   const setField = <K extends keyof CheckoutData>(field: K, value: CheckoutData[K]) => setForm((current) => ({ ...current, [field]: value }));
   const amount = total(lines, form.fulfillment);
   const shipping = shippingCost(lines, form.fulfillment);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError("");
     if (!form.name.trim() || !form.phone.trim()) {
       setError("Completa tu nombre y WhatsApp para continuar.");
       return;
@@ -194,17 +201,51 @@ function CheckoutModal({ lines, onBack, onComplete }: { lines: CartLine[]; onBac
       setError("Ingresa una dirección para el despacho.");
       return;
     }
-    onComplete(form);
+    setIsSending(true);
+    try {
+      const items = lines.map((line) => `${line.quantity} x ${line.product.name} (${line.variant}) · ${formatPrice(line.product.priceClp * line.quantity)}`).join("\n");
+      const response = await fetch(QUOTE_FORM_ENDPOINT, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          _subject: `Nueva solicitud DRG · ${form.vehicle || "Vehículo por confirmar"}`,
+          _template: "table",
+          _honey: "",
+          _url: typeof window === "undefined" ? "" : window.location.href,
+          request_code: requestCode,
+          name: form.name,
+          phone: form.phone,
+          email: form.email || "No informado",
+          vehicle: form.vehicle || "Por confirmar",
+          fulfillment: fulfillmentLabel(form.fulfillment),
+          address: form.address || "No informada",
+          items,
+          subtotal: formatPrice(subtotal(lines)),
+          shipping: shipping === 0 ? "A confirmar" : formatPrice(shipping),
+          total: formatPrice(amount),
+          details: form.notes || "Sin comentario adicional",
+        }),
+      });
+      const result = await response.json().catch(() => null) as { success?: boolean | string; message?: string } | null;
+      const accepted = response.ok && (!result || result.success === undefined || result.success === true || result.success === "true");
+      if (!accepted) throw new Error(result?.message || "El servicio de correo rechazó la solicitud.");
+      onComplete(form, requestCode);
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "No pudimos enviar la solicitud. Inténtalo nuevamente.");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
     <div className="overlay" role="presentation">
       <section className="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
-        <div className="drawer-header"><div><p className="eyebrow">Paso final</p><h2 id="checkout-title">Cuéntanos de tu vehículo</h2></div><button className="close-button" type="button" onClick={onBack} aria-label="Volver al carrito">×</button></div>
+        <div className="drawer-header"><div><p className="eyebrow">Paso final</p><h2 id="checkout-title">Cuéntanos de tu vehículo</h2></div><button className="close-button" type="button" onClick={onBack} aria-label="Volver al carrito" disabled={isSending}>×</button></div>
+        <div className="checkout-items" aria-label="Productos y servicios seleccionados"><p className="checkout-items__title">Tu solicitud</p>{lines.map((line) => <div className="checkout-item" key={line.lineId}><div><strong>{line.quantity} × {line.product.name}</strong><small>{line.variant}</small></div><b>{formatPrice(line.product.priceClp * line.quantity)}</b></div>)}</div>
         <form onSubmit={submit}>
           <div className="checkout-grid">
-            <label>Nombre<input value={form.name} onChange={(event) => setField("name", event.target.value)} placeholder="Tu nombre" /></label>
-            <label>WhatsApp<input value={form.phone} onChange={(event) => setField("phone", event.target.value)} placeholder="+56 9 ..." /></label>
+            <label>Nombre<input required value={form.name} onChange={(event) => setField("name", event.target.value)} placeholder="Tu nombre" /></label>
+            <label>WhatsApp<input required value={form.phone} onChange={(event) => setField("phone", event.target.value)} placeholder="+56 9 ..." /></label>
             <label>Correo <span className="optional">opcional</span><input type="email" value={form.email} onChange={(event) => setField("email", event.target.value)} placeholder="tu@correo.cl" /></label>
             <label>Marca, modelo y año<input value={form.vehicle} onChange={(event) => setField("vehicle", event.target.value)} placeholder="Ej. Mazda 3 2017" /></label>
           </div>
@@ -212,9 +253,9 @@ function CheckoutModal({ lines, onBack, onComplete }: { lines: CartLine[]; onBac
           {form.fulfillment === "despacho" && <label>Dirección<input value={form.address} onChange={(event) => setField("address", event.target.value)} placeholder="Calle, número y comuna" /></label>}
           <label>Comentario <span className="optional">opcional</span><textarea value={form.notes} onChange={(event) => setField("notes", event.target.value)} placeholder="Cuéntanos qué necesitas o qué sistema tiene tu auto." /></label>
           {error && <p className="form-error" role="alert">{error}</p>}
-          <div className="checkout-summary"><div><span>Productos</span><b>{formatPrice(subtotal(lines))}</b></div><div><span>{form.fulfillment === "retiro" ? "Coordinación" : form.fulfillment === "instalacion" ? "Instalación" : "Despacho"}</span><b>{shipping === 0 ? "A confirmar" : formatPrice(shipping)}</b></div><div className="checkout-total"><span>Total demo</span><strong>{formatPrice(amount)}</strong></div></div>
-          <div className="checkout-actions"><button className="secondary-button" type="button" onClick={onBack}>Volver</button><button className="primary-button" type="submit">Enviar solicitud <span aria-hidden="true">→</span></button></div>
-          <p className="demo-caption">Esta demo no cobra ni envía datos a un negocio real.</p>
+          <div className="checkout-summary"><div><span>Productos y servicios</span><b>{formatPrice(subtotal(lines))}</b></div><div><span>{form.fulfillment === "retiro" ? "Coordinación" : form.fulfillment === "instalacion" ? "Instalación" : "Despacho"}</span><b>{shipping === 0 ? "A confirmar" : formatPrice(shipping)}</b></div><div className="checkout-total"><span>Total de la solicitud</span><strong>{formatPrice(amount)}</strong></div></div>
+          <div className="checkout-actions"><button className="secondary-button" type="button" onClick={onBack} disabled={isSending}>Volver</button><button className="primary-button" type="submit" disabled={isSending}>{isSending ? "Enviando solicitud…" : "Enviar solicitud"} <span aria-hidden="true">→</span></button></div>
+          <p className="checkout-note">La solicitud se enviará al correo de DRG para confirmar compatibilidad, disponibilidad e instalación.</p>
         </form>
       </section>
     </div>
@@ -271,21 +312,21 @@ function QuoteModal({ onClose }: { onClose: () => void }) {
             {error && <p className="form-error" role="alert">{error}</p>}
             <button className="primary-button primary-button--wide" type="submit" disabled={isSending}>{isSending ? "Enviando cotización…" : "Enviar cotización"}</button>
           </form>
-          <p className="demo-caption">La solicitud se envía directamente a <strong>{QUOTE_EMAIL}</strong>.</p>
+          <p className="info-caption">La solicitud se envía directamente a <strong>{QUOTE_EMAIL}</strong>.</p>
         </> : <div className="quote-success"><div className="success-icon">✓</div><p className="eyebrow">Cotización enviada</p><h2>Recibimos los datos de tu proyecto.</h2><p>La solicitud fue enviada a <strong>{QUOTE_EMAIL}</strong>. El equipo podrá revisar compatibilidad, disponibilidad y coordinación de instalación.</p><button className="primary-button primary-button--wide" type="button" onClick={onClose}>Volver al catálogo</button></div>}
       </section>
     </div>
   );
 }
 
-function SuccessModal({ order, onClose }: { order: DemoOrder; onClose: () => void }) {
+function SuccessModal({ order, onClose }: { order: OrderSummary; onClose: () => void }) {
   return (
     <div className="overlay" role="presentation">
       <section className="success-modal" role="dialog" aria-modal="true" aria-labelledby="success-title">
-        <div className="success-icon">✓</div><p className="eyebrow">Solicitud recibida</p><h2 id="success-title">¡Gracias, {order.customerName}!</h2><p>Así se vería la confirmación para tu cliente y para el equipo de DRG.</p>
+        <div className="success-icon">✓</div><p className="eyebrow">Solicitud recibida</p><h2 id="success-title">¡Gracias, {order.customerName}!</h2><p>Recibimos tu solicitud y la enviaremos al equipo de DRG para revisar los detalles de tu vehículo.</p>
         <div className="success-code"><span>Referencia de solicitud</span><strong>{order.code}</strong></div>
-        <div className="success-detail"><span>Productos</span><b>{order.itemCount}</b><span>Vehículo</span><b>{order.vehicle || "Por confirmar"}</b><span>Modalidad</span><b>{order.fulfillment === "instalacion" ? "Instalación a domicilio" : order.fulfillment === "despacho" ? "Despacho" : "Coordinación"}</b><span>Total demo</span><b>{formatPrice(order.totalClp)}</b></div>
-        <div className="success-note">En una versión personalizada, esta solicitud podría llegar al panel administrativo, correo o WhatsApp del negocio.</div>
+        <div className="success-detail"><span>Productos y servicios</span><b>{order.itemCount}</b><span>Vehículo</span><b>{order.vehicle || "Por confirmar"}</b><span>Modalidad</span><b>{order.fulfillment === "instalacion" ? "Instalación a domicilio" : order.fulfillment === "despacho" ? "Despacho" : "Coordinación"}</b><span>Total de la solicitud</span><b>{formatPrice(order.totalClp)}</b></div>
+        <div className="success-note">La solicitud fue enviada al correo de DRG. El valor final y la coordinación se confirman antes de instalar o entregar el equipo.</div>
         <button className="primary-button" type="button" onClick={onClose}>Volver al catálogo</button>
       </section>
     </div>
@@ -303,7 +344,7 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedVariant, setSelectedVariant] = useState("");
   const [selectedQuantity, setSelectedQuantity] = useState(1);
-  const [order, setOrder] = useState<DemoOrder | null>(null);
+  const [order, setOrder] = useState<OrderSummary | null>(null);
 
   useEffect(() => { window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }, [cart]);
   useEffect(() => { loadCatalog().then(setCatalog).catch(() => undefined); }, []);
@@ -321,11 +362,11 @@ export default function App() {
 
   const openProduct = (product: Product) => { setSelectedProduct(product); setSelectedVariant(product.variants[0] ?? "Único"); setSelectedQuantity(1); };
   const addSelectedProduct = () => { if (!selectedProduct) return; setCart((current) => addLine(current, selectedProduct, selectedVariant, selectedQuantity)); setSelectedProduct(null); setCartOpen(true); };
-  const completeOrder = (data: CheckoutData) => { setOrder({ code: createDemoCode(), customerName: data.name.trim(), totalClp: total(cart, data.fulfillment), fulfillment: data.fulfillment, itemCount: itemCount(cart), vehicle: data.vehicle.trim() }); setCart([]); setCheckoutOpen(false); setCartOpen(false); };
+  const completeOrder = (data: CheckoutData, code: string) => { setOrder({ code, customerName: data.name.trim(), totalClp: total(cart, data.fulfillment), fulfillment: data.fulfillment, itemCount: itemCount(cart), vehicle: data.vehicle.trim() }); setCart([]); setCheckoutOpen(false); setCartOpen(false); };
 
   return (
     <div className="store-shell">
-      <div className="demo-bar"><span className="demo-dot" /> Demo de catálogo DRG · No se realizan cobros reales <span className="demo-bar__right">Equipos + instalación a domicilio</span></div>
+      <div className="demo-bar"><span className="demo-dot" /> Catálogo DRG · Solicitudes de cotización <span className="demo-bar__right">Equipos + instalación a domicilio</span></div>
       <header className="store-header">
         <a className="store-brand" href="#inicio" aria-label="DRG Automotriz, inicio"><span className="store-brand__logo"><img src="/drg/logo.png" alt="" /></span><span><strong>DRG</strong><small>Automotriz</small></span></a>
         <nav className="store-nav" aria-label="Navegación de la tienda"><a href="#catalogo">Equipos</a><a href="#servicios">Instalación</a><a href="#trabajos">Trabajos</a><a href="#contacto">Contacto</a></nav>
@@ -352,10 +393,10 @@ export default function App() {
 
         <section className="brands-section" aria-labelledby="brands-title"><div><p className="eyebrow">Compatibilidad real</p><h2 id="brands-title">Trabajamos con tu <em>marca.</em></h2><p>Tenemos soluciones para integrar CarPlay y Android Auto, reparar pantallas originales o instalar un equipo a pedido. Envíanos marca, modelo y año para confirmar la alternativa correcta.</p></div><div className="brands-list">{SUPPORTED_BRANDS.map((brand) => <span key={brand}>{brand}</span>)}<span className="brands-list__more">Otros modelos · consultar</span></div></section>
 
-        <section className="contact-section" id="contacto"><div><p className="eyebrow">04 · Hablemos</p><h2>¿Qué quieres mejorar <em>en tu auto?</em></h2><p>Envíanos tu marca y modelo. Te ayudamos a encontrar una alternativa compatible y coordinamos la instalación.</p></div><div className="contact-actions"><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Solicitar cotización <span aria-hidden="true">↗</span></button><a className="secondary-button" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Ver Instagram <span aria-hidden="true">↗</span></a><small>El número de WhatsApp se configura al pasar el demo a producción.</small></div></section>
+        <section className="contact-section" id="contacto"><div><p className="eyebrow">04 · Hablemos</p><h2>¿Qué quieres mejorar <em>en tu auto?</em></h2><p>Envíanos tu marca y modelo. Te ayudamos a encontrar una alternativa compatible y coordinamos la instalación.</p></div><div className="contact-actions"><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Solicitar cotización <span aria-hidden="true">↗</span></button><a className="secondary-button" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Ver Instagram <span aria-hidden="true">↗</span></a><small>La atención se coordina directamente con el equipo de DRG.</small></div></section>
       </main>
 
-      <footer className="store-footer"><div className="store-brand"><span className="store-brand__logo"><img src="/drg/logo.png" alt="" /></span><span><strong>DRG</strong><small>Automotriz</small></span></div><p>Multimedia, CarPlay y soluciones para tu vehículo.</p><span>© {new Date().getFullYear()} · Demo</span></footer>
+      <footer className="store-footer"><div className="store-brand"><span className="store-brand__logo"><img src="/drg/logo.png" alt="" /></span><span><strong>DRG</strong><small>Automotriz</small></span></div><p>Multimedia, CarPlay y soluciones para tu vehículo.</p><span>© {new Date().getFullYear()} · DRG Automotriz</span></footer>
 
       {selectedProduct && <ProductModal product={selectedProduct} labelForCategory={labelForCategory} variant={selectedVariant} quantity={selectedQuantity} onVariant={setSelectedVariant} onQuantity={setSelectedQuantity} onAdd={addSelectedProduct} onClose={() => setSelectedProduct(null)} />}
       {cartOpen && <CartDrawer lines={cart} onQuantity={(lineId, quantity) => setCart((current) => updateLineQuantity(current, lineId, quantity))} onRemove={(lineId) => setCart((current) => removeLine(current, lineId))} onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }} onClose={() => setCartOpen(false)} />}
