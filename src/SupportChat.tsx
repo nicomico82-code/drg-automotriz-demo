@@ -19,11 +19,6 @@ const quickQuestions: QuickQuestion[] = [
   { label: "Despacho", prompt: "¿Hacen despacho o retiro?" },
 ];
 
-const contactQuestions: QuickQuestion[] = [
-  { label: "WhatsApp", prompt: "¿Cómo contacto a DRG por WhatsApp?" },
-  { label: "Correo", prompt: "¿Cuál es el correo de DRG?" },
-];
-
 const initialMessage: ChatMessage = {
   id: 1,
   role: "assistant",
@@ -109,10 +104,6 @@ export function SupportChat() {
           <div className="support-chat__quick" aria-label="Preguntas frecuentes">
             <p className="support-chat__section-label">Preguntas frecuentes</p>
             {quickQuestions.map((question) => <button type="button" key={question.label} onClick={() => ask(question.prompt)}>{question.label}</button>)}
-          </div>
-          <div className="support-chat__contact" aria-label="Canales de contacto">
-            <p className="support-chat__section-label">También puedes contactarnos</p>
-            {contactQuestions.map((question) => <button className="support-chat__contact-button" type="button" key={question.label} onClick={() => ask(question.prompt)}>{question.label}</button>)}
           </div>
           <form className="support-chat__form" onSubmit={submit}>
             <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Escribe una pregunta" aria-label="Escribe una pregunta" />
