@@ -35,10 +35,10 @@ function answerFor(question: string) {
     return "La instalación se realiza previa coordinación. Primero revisamos la cotización, compatibilidad y ubicación; luego acordamos día, hora y lugar para instalar y probar el equipo.";
   }
   if (/cotiz|precio|valor|cuanto|cuánto|presupuesto/.test(normalized)) {
-    return "Para cotizar necesitamos marca, modelo, año y qué quieres mejorar. Con esos datos revisamos compatibilidad, equipo, instalación y despacho; el valor final se confirma antes de coordinar.";
+    return "Para cotizar necesitamos la marca, el modelo, el año y qué quieres mejorar. Con esos datos revisamos la compatibilidad, el equipo, la instalación y el despacho; el valor final se confirma antes de coordinar.";
   }
   if (/compat|marca|modelo|ano|año/.test(normalized)) {
-    return "Revisamos marca, modelo y año antes de recomendar un equipo. Así confirmamos conectores, funciones disponibles y si la instalación es compatible con tu vehículo.";
+    return "Revisamos la marca, el modelo y el año antes de recomendar un equipo. Así confirmamos los conectores, las funciones disponibles y si la instalación es compatible con tu vehículo.";
   }
   if (/despacho|retiro|envio|envío|entrega/.test(normalized)) {
     return "Puedes coordinar retiro o solicitar despacho. La cobertura y el costo se confirman junto con la cotización, según tu comuna y el tipo de equipo.";
@@ -53,7 +53,7 @@ function answerFor(question: string) {
     return "La cotización se confirma antes de cualquier pago. Luego se puede coordinar el medio de pago que defina el negocio, junto con la instalación y el despacho.";
   }
 
-  return "Puedo responder preguntas sobre servicios, cotizaciones, compatibilidad, instalación previa coordinación, despacho o contacto. Prueba una de las opciones rápidas.";
+  return "Puedo responder preguntas sobre servicios, cotizaciones, compatibilidad, instalación (previa coordinación), despacho o contacto. Prueba una de las opciones rápidas.";
 }
 
 export function SupportChat() {

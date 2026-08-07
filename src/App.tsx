@@ -100,7 +100,7 @@ function ProductModal({
         <div className="product-modal__content">
           <p className="eyebrow">{labelForCategory(product.category)}</p>
           <h2 id="product-modal-title">{product.name}</h2>
-          <p className="product-modal__description">{product.description} Antes de confirmar revisamos compatibilidad con tu vehículo y la cobertura de instalación.</p>
+          <p className="product-modal__description">{product.description} Antes de confirmar, revisamos la compatibilidad con tu vehículo y la cobertura de instalación.</p>
           <div className="product-modal__price">
             <strong>{formatPrice(product.priceClp)}</strong>
             {product.compareAtPriceClp && <del>{formatPrice(product.compareAtPriceClp)}</del>}
@@ -168,7 +168,7 @@ function CartDrawer({
               ))}
             </div>
             <div className="cart-summary"><span>Subtotal</span><strong>{formatPrice(amount)}</strong></div>
-            <p className="cart-note">En el siguiente paso nos cuentas tu vehículo y si necesitas instalación.</p>
+            <p className="cart-note">En el siguiente paso, cuéntanos de tu vehículo y si necesitas instalación.</p>
             <button className="primary-button primary-button--wide" type="button" onClick={onCheckout}>Continuar al checkout <span aria-hidden="true">→</span></button>
           </>
         )}
@@ -194,7 +194,7 @@ function CheckoutModal({ lines, onBack, onComplete }: { lines: CartLine[]; onBac
       return;
     }
     if (form.fulfillment === "instalacion" && !form.vehicle.trim()) {
-      setError("Indica marca, modelo y año para revisar compatibilidad.");
+      setError("Indica la marca, el modelo y el año para revisar la compatibilidad.");
       return;
     }
     if (form.fulfillment === "despacho" && !form.address.trim()) {
@@ -303,7 +303,7 @@ function QuoteModal({ onClose }: { onClose: () => void }) {
       <section className="quote-modal" role="dialog" aria-modal="true" aria-labelledby="quote-title">
         <button className="close-button" type="button" onClick={onClose} aria-label="Cerrar formulario">×</button>
         {!submitted ? <>
-          <p className="eyebrow">Cotización rápida</p><h2 id="quote-title">Cuéntanos qué quieres mejorar.</h2><p className="quote-intro">Con tu marca y modelo revisamos compatibilidad, equipo disponible y cobertura de instalación.</p>
+          <p className="eyebrow">Cotización rápida</p><h2 id="quote-title">Cuéntanos qué quieres mejorar.</h2><p className="quote-intro">Con la marca y el modelo revisamos la compatibilidad, el equipo disponible y la cobertura de instalación.</p>
           <form onSubmit={submit} className="quote-form">
             <div className="checkout-grid"><label>Nombre<input required value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="Tu nombre" /></label><label>WhatsApp<input required value={form.phone} onChange={(event) => update("phone", event.target.value)} placeholder="+56 9 ..." /></label></div>
             <label>Marca, modelo y año<input required value={form.vehicle} onChange={(event) => update("vehicle", event.target.value)} placeholder="Ej. Mercedes CLA 2018" /></label>
@@ -375,7 +375,7 @@ export default function App() {
 
       <main>
         <section className="store-hero" id="inicio">
-          <div className="store-hero__copy"><p className="eyebrow"><span className="eyebrow-line" /> CarPlay · Android Auto · instalación</p><h1>Tu pantalla original, <em>mucho más útil.</em></h1><p>Integramos CarPlay y Android Auto detrás de la radio de fábrica, instalamos pantallas a pedido y reparamos sistemas multimedia en una amplia variedad de marcas.</p><div className="hero-actions"><a className="primary-button" href="#catalogo">Ver soluciones <span aria-hidden="true">↓</span></a><button className="secondary-button" type="button" onClick={() => setQuoteOpen(true)}>Cotizar instalación <span aria-hidden="true">↗</span></button></div><div className="hero-proof"><span>01</span><div><strong>Compatibilidad primero</strong><p>Revisamos marca, modelo y año antes de recomendar.</p></div></div></div>
+          <div className="store-hero__copy"><p className="eyebrow"><span className="eyebrow-line" /> CarPlay · Android Auto · instalación</p><h1>Tu pantalla original, <em>mucho más útil.</em></h1><p>Integramos CarPlay y Android Auto detrás de la radio de fábrica, instalamos pantallas a pedido y reparamos sistemas multimedia en una amplia variedad de marcas.</p><div className="hero-actions"><a className="primary-button" href="#catalogo">Ver soluciones <span aria-hidden="true">↓</span></a><button className="secondary-button" type="button" onClick={() => setQuoteOpen(true)}>Cotizar instalación <span aria-hidden="true">↗</span></button></div><div className="hero-proof"><span>01</span><div><strong>Compatibilidad primero</strong><p>Revisamos la marca, el modelo y el año antes de recomendar.</p></div></div></div>
           <div className="store-hero__visual"><img src={catalog.gallery[0].image} alt="Instalación multimedia en un vehículo" /><div className="hero-product-card"><span>Trabajo destacado</span><strong>Mercedes · CarPlay inalámbrico</strong><b>Equipo + instalación</b></div><div className="hero-stamp"><img src="/drg/logo.png" alt="DRG Automotriz" /></div></div>
         </section>
 
@@ -387,13 +387,13 @@ export default function App() {
           {visibleProducts.length === 0 ? <div className="no-results"><h3>No encontramos ese equipo.</h3><p>Prueba con otra palabra o solicita una revisión personalizada.</p><button className="secondary-button" type="button" onClick={() => { setQuery(""); setCategory("Todos"); }}>Ver catálogo</button></div> : <div className="product-grid">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} labelForCategory={labelForCategory} onOpen={openProduct} />)}</div>}
         </section>
 
-        <section className="service-section" id="servicios"><div className="service-section__intro"><p className="eyebrow">02 · Cómo trabajamos</p><h2>Del diagnóstico a la <em>ruta.</em></h2><p>El módulo se instala detrás de la radio original para sumar CarPlay y Android Auto. Si tu vehículo no trae pantalla, coordinamos una alternativa a pedido y la dejamos funcionando.</p><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Quiero revisar mi auto <span aria-hidden="true">↗</span></button></div><div className="service-steps"><div><span>01</span><strong>Cuéntanos tu vehículo</strong><p>Marca, modelo, año y qué te gustaría mejorar.</p></div><div><span>02</span><strong>Confirmamos compatibilidad</strong><p>Revisamos el sistema original y proponemos una alternativa.</p></div><div><span>03</span><strong>Instalamos y probamos</strong><p>Coordinamos la visita y dejamos todo listo y explicado.</p></div></div></section>
+        <section className="service-section" id="servicios"><div className="service-section__intro"><p className="eyebrow">02 · Cómo trabajamos</p><h2>Del diagnóstico a la <em>ruta.</em></h2><p>El módulo se instala detrás de la radio original para sumar CarPlay y Android Auto. Si tu vehículo no trae pantalla, coordinamos una alternativa a pedido y la dejamos funcionando.</p><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Quiero revisar mi auto <span aria-hidden="true">↗</span></button></div><div className="service-steps"><div><span>01</span><strong>Cuéntanos de tu vehículo</strong><p>Indica la marca, el modelo, el año y qué te gustaría mejorar.</p></div><div><span>02</span><strong>Confirmamos compatibilidad</strong><p>Revisamos el sistema original y proponemos una alternativa.</p></div><div><span>03</span><strong>Instalamos y probamos</strong><p>Coordinamos la visita y dejamos todo listo y explicado.</p></div></div></section>
 
         <section className="gallery-section" id="trabajos"><div className="section-heading"><div><p className="eyebrow">03 · Trabajos reales</p><h2>Una muestra de lo que <em>hacemos.</em></h2></div><p>Integraciones, actualizaciones y diagnósticos documentados por el equipo.</p></div><div className="gallery-grid">{catalog.gallery.map((item) => <figure key={item.image}><img src={item.image} alt={item.title} loading="lazy" /><figcaption><span>{item.tag}</span><strong>{item.title}</strong></figcaption></figure>)}</div></section>
 
-        <section className="brands-section" aria-labelledby="brands-title"><div><p className="eyebrow">Compatibilidad real</p><h2 id="brands-title">Trabajamos con tu <em>marca.</em></h2><p>Tenemos soluciones para integrar CarPlay y Android Auto, reparar pantallas originales o instalar un equipo a pedido. Envíanos marca, modelo y año para confirmar la alternativa correcta.</p></div><div className="brands-list">{SUPPORTED_BRANDS.map((brand) => <span key={brand}>{brand}</span>)}<span className="brands-list__more">Otros modelos · consultar</span></div></section>
+        <section className="brands-section" aria-labelledby="brands-title"><div><p className="eyebrow">Compatibilidad real</p><h2 id="brands-title">Trabajamos con tu <em>marca.</em></h2><p>Tenemos soluciones para integrar CarPlay y Android Auto, reparar pantallas originales o instalar un equipo a pedido. Envíanos la marca, el modelo y el año para confirmar la alternativa correcta.</p></div><div className="brands-list">{SUPPORTED_BRANDS.map((brand) => <span key={brand}>{brand}</span>)}<span className="brands-list__more">Otros modelos · consultar</span></div></section>
 
-        <section className="contact-section" id="contacto"><div><p className="eyebrow">04 · Hablemos</p><h2>¿Qué quieres mejorar <em>en tu auto?</em></h2><p>Envíanos tu marca y modelo. Te ayudamos a encontrar una alternativa compatible y coordinamos la instalación.</p></div><div className="contact-actions"><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Solicitar cotización <span aria-hidden="true">↗</span></button><a className="secondary-button" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Ver Instagram <span aria-hidden="true">↗</span></a><small>La atención se coordina directamente con el equipo de DRG.</small></div></section>
+        <section className="contact-section" id="contacto"><div><p className="eyebrow">04 · Hablemos</p><h2>¿Qué quieres mejorar <em>en tu auto?</em></h2><p>Envíanos la marca y el modelo. Te ayudamos a encontrar una alternativa compatible y coordinamos la instalación.</p></div><div className="contact-actions"><button className="primary-button" type="button" onClick={() => setQuoteOpen(true)}>Solicitar cotización <span aria-hidden="true">↗</span></button><a className="secondary-button" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Ver Instagram <span aria-hidden="true">↗</span></a><small>La atención se coordina directamente con el equipo de DRG.</small></div></section>
       </main>
 
       <footer className="store-footer"><div className="store-brand"><span className="store-brand__logo"><img src="/drg/logo.png" alt="" /></span><span><strong>DRG</strong><small>Automotriz</small></span></div><p>Multimedia, CarPlay y soluciones para tu vehículo.</p><span>© {new Date().getFullYear()} · DRG Automotriz</span></footer>

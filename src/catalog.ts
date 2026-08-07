@@ -73,7 +73,7 @@ export const products: Product[] = [
     category: "carplay",
     priceClp: 0,
     description:
-      "Envíanos marca, modelo y año; confirmamos compatibilidad y te recomendamos la solución antes de instalar.",
+      "Envíanos la marca, el modelo y el año; confirmamos la compatibilidad y te recomendamos la solución antes de instalar.",
     image: asset("mazda6-carplay.png"),
     gallery: [asset("mazda-carplay-01.png"), asset("silverado-radio.png")],
     variants: ["Marca y modelo", "Año del vehículo", "Enviar consulta"],
